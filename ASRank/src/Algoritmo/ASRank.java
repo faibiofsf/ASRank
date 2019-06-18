@@ -19,14 +19,14 @@ public class ASRank {
 	private ArrayList<Formiga> colonia;
 	private ArrayList<Integer> cidadesAVisitar;
 	private Formiga melhorFormiga;
-	private int numeroFormigas, numeroIteracoes, selecao;
+	private int numeroFormigas, numeroIteracoes, selecao, delt;
 	boolean[] cidadesSelecionadasK;
 	private FileWriter arqPopulacao, arqMelhorGlobal, arqSaidaDiversidade;
 	private PrintWriter gravarArqPopulacao, gravarArqMelhorGlobal, gravarArqSaidaDiversidade;
 	private Random random;
 	public String saida;
 
-	public ASRank(double alfa, double beta, double qk, double ro, int numeroFormigas, int numeroIteracoes, int selecao,
+	public ASRank(double alfa, double beta, double qk, double ro, int numeroFormigas, int numeroIteracoes, int selecao, int delt,
 			double probSelecaoAleatoria, String entrada, String saidaPopulacao, String saidaMelhorGlobal,
 			String saidaDiversidade) {
 		if (entrada.contains("brazil27") || entrada.contains("bays29")) {
@@ -61,6 +61,7 @@ public class ASRank {
 		this.gravarArqSaidaDiversidade = new PrintWriter(arqSaidaDiversidade);
 		random = new Random();// 12345);
 		this.probSelecaoAleatoria = probSelecaoAleatoria;
+		this.delt = delt;
 	}
 
 	private void iniciar() {
@@ -317,8 +318,11 @@ public class ASRank {
 
 		double[][] delta = new double[feromonio.length][feromonio[0].length];
 
-		for (Formiga formiga : colonia) {
+		for (int i = 0; i < delt; i++) {
+			Formiga formiga = colonia.get(i);
 			deltaFeromomio(formiga, delta);
+			
+			deltaFeromomio(this.melhorFormiga, delta);
 		}
 
 		// double p = Math.random();
@@ -335,7 +339,7 @@ public class ASRank {
 	// Calcula o delta de feromonio
 	private void deltaFeromomio(Formiga formiga, double[][] delta) {
 
-		double deltatIJk = (formiga.getSk().length * Qk) / formiga.getLk();
+		double deltatIJk = this.Qk / formiga.getLk();
 
 		for (int i = 0; i < formiga.getSk().length; i++) {
 
@@ -696,16 +700,18 @@ public class ASRank {
 			double[] q = { 0.5 };
 			double[] ro = { 0.2 };
 			int[] tamColonia = { 58 };
-			int[] iteracoes = { 500 };
+			int[] iteracoes = { 5000 };
 			// 0 - roleta, 1 - torneio
 			int[] selecao = { 0 };
-			String[] problema = { "bays29" };// ,"eil76", "brazil58", "kroA100",
-												// "att532", "d1291" };
+			String[] problema = {"brazil58" 
+								// "att532",
+								// "d1291"
+								};
 			// Probabilidade de selecionar uma cidade de forma aleatorioa
 			double[] pobSelecaoAleatoria = { 0 };
-			double[] del = { 6 };
+			int[] del = { 6 };
 
-			int numeroExecucoes = 1;
+			int numeroExecucoes = 50;
 
 			for (int delt = 0; delt < del.length; delt++) {
 
@@ -764,7 +770,7 @@ public class ASRank {
 																+ pobSelecaoAleatoria[sa] + "_del-" + del[delt] +".txt";
 
 														ASRank aco = new ASRank(alfa[i], beta[j], q[j2], ro[k],
-																tamColonia[k2], iteracoes[l], selecao[se],
+																tamColonia[k2], iteracoes[l], selecao[se], del[delt],
 																pobSelecaoAleatoria[sa], entrada, saidaPopulacao,
 																saidaMelhorGlobal, saidaDiversidade);
 
